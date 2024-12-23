@@ -28,7 +28,7 @@ const userSchema = new Schema({
 
     profilePicture: {
         type: String,
-        default: "../public/default_profile_pic.png"
+        default: "https://res.cloudinary.com/dgrmoexeo/image/upload/v1734859619/n17fniccnbqhxjjormoj.jpg" // to be added in .env variables
     },
 
     kudos: {
@@ -43,7 +43,6 @@ const userSchema = new Schema({
     },
     refreshToken: {
         type: String,
-        default: null,
       },
 
 },
