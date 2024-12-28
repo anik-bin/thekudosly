@@ -139,4 +139,42 @@ const loginUser = async (req, res) => {
     }
 }
 
-export { registerUser, loginUser };
+const logoutUser = async (req, res)=>{
+    try {
+        await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    refreshToken: undefined
+                }
+            },
+            {
+                new: true,
+            }
+        )
+    
+        const options = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+        }
+    
+        return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json({
+            success: true,
+            message: "User logged out successfully"
+        })
+        
+    } catch (error) {
+        console.error("Error during logout:", error.message);
+        res.status(500).json({
+            success: false,
+            message: "Server error during logout",
+        });
+        
+    }
+}
+export { registerUser, loginUser, logoutUser };
