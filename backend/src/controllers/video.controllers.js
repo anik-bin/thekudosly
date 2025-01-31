@@ -1,6 +1,7 @@
 import { Videos } from "../models/video.models.js";
 import { User } from "../models/user.models.js";
 import { extractVideoId } from "../utils/extractYoutubeVideoID.js"; // Add YouTube regex utility
+import axios from "axios";
 
 // Submit a video (deduct 1 kudo)
 export const submitVideo = async (req, res) => {
@@ -11,8 +12,34 @@ export const submitVideo = async (req, res) => {
     const videoId = extractVideoId(req.body.url);
     if (!videoId) return res.status(400).json({ error: "Invalid YouTube URL" });
 
-    const video = await Videos.create({ ...req.body, submittedBy: user._id });
+    // Fetch video details from YouTube API
+    const response = await axios.get(
+      "https://www.googleapis.com/youtube/v3/videos",
+      {
+        params: {
+          part: "snippet",
+          id: videoId,
+          key: process.env.YOUTUBE_API_KEY, // Add to .env
+        },
+      }
+    );
+
+    if (response.data.items.length === 0) {
+      return res.status(404).json({ error: "Video not found" });
+    }
+
+    const videoDetails = response.data.items[0].snippet;
+    const thumbnailUrl = videoDetails.thumbnails.maxres?.url || videoDetails.thumbnails.default.url;
+
+    // Deduct kudos and save video
     user.kudos -= 1;
+    const video = await Videos.create({
+      url: req.body.url,
+      title: videoDetails.title,
+      thumbnail: thumbnailUrl,
+      submittedBy: user._id,
+    });
+
     await user.save();
     res.status(201).json(video);
   } catch (error) {
