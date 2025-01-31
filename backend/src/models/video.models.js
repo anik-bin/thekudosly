@@ -5,7 +5,7 @@ const videoSchema = new Schema({
         type: String,
         required: true,
         unique: true,
-        match: /^https:\/\/www\.youtube\.com\/watch\?v=.+$/, // Ensures it's a valid YouTube link
+        match: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/, // Ensures it's a valid YouTube link
     },
     title: {
         type: String,
